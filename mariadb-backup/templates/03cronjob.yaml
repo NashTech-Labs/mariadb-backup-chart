@@ -1,0 +1,59 @@
+{{- include "isenabled.workloadorserviceaccount" . }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Release.Name }}
+spec:
+{{- $root :=  .Values }}
+{{- with .Values.cronjob }}
+  schedule: {{ default "0 0 * * *" .schedule | quote }}
+  concurrencyPolicy: {{ .concurrencyPolicy }}
+  jobTemplate:
+    metadata:
+      name: mariadb-backup
+    spec:
+      completions: {{ default "1" .completionCount  }}
+      ttlSecondsAfterFinished: {{ default "30" .ttlSecondsAfterFinished }}
+      parallelism: {{ default "1" .parallelism }}
+      template:
+        metadata:
+          name: gcloud
+        spec:
+          restartPolicy: {{ default "OnFailure" .restartPolicy }}
+          {{- include "backup.serviceaccount" $root | indent 10 }}
+          containers:
+          - name: {{ $.Release.Name }}-gcloud
+            image: {{ default "google/cloud-sdk:latest" .image }}
+            imagePullPolicy: {{ default "IfNotPresent" .imagePullPolicy }}
+            {{ end -}}
+            env:
+              {{- include "mariadb.secretresource" . | indent 14 }}
+              - name: "DB_HOST"
+                value: {{ required "mariadb DB Host is required" .Values.mariadb_host | quote }}
+              - name: DB_PORT
+                value: {{ default "3306" .Values.mariadb_port | quote }}
+              - name: BUCKET_NAME
+                value: {{ required "GCS Bucket Name is required" .Values.gcs_bucket_name | quote }}
+              - name: GCLOUD_PROJECT
+                value: {{ required "GCP Project ID is required" .Values.gcloud_project | quote }}
+             {{- if .Values.gcs_serviceaccount.enabled -}}
+              {{- include "backup.gcp_creds" . | indent 14}}
+              {{- end }}
+            command: 
+            - "/mariadb-backup/backup.sh"
+            volumeMounts:
+              - mountPath: /mariadb-backup
+                name: backup-script
+              {{ if .Values.gcs_serviceaccount.enabled -}}
+              - mountPath: /gcloud-key
+                name: gcloud-key
+              {{- end }}
+          volumes:
+            - name: backup-script
+              configMap:
+                name: {{ .Chart.Name }}-script
+                items:
+                  - key: backup.sh
+                    path: backup.sh
+                defaultMode: 0755
+            {{- include "backup.gcp_serviceaccount" . | indent 12 }}

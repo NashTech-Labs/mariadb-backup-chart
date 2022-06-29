@@ -1,0 +1,62 @@
+cronjob:
+  schedule: "0 0 * * *"
+  concurrencyPolicy: Forbid
+  completionCount: 1
+  ttlSecondsAfterFinished: 30
+  parallelism: 1
+  restartPolicy: OnFailure
+  image: google/cloud-sdk:latest
+  imagePullPolicy: IfNotPresent
+
+# mariadb admin username and password. Required if mariadb_existing_secret field is not enabled
+mariadb_admin_user: root
+mariadb_Password: ""
+
+# To get the admin username and password from existing secrets. If enabled, secretName and secretKey are mandatory for both mariadb_admin_user
+# and mariadb_password
+mariadb_existing_secret:
+  enabled: false
+  mariadb_admin_user:
+    secretName: ""
+    secretKey: ""
+  mariadb_password:
+    secretName: ""
+    secretKey: ""
+
+# mariadb host denotes the mariadb server to backup. gcs_bucket_name is the name of the gcs bucket and gcloud_project is the name
+# in which the GCS bucket is present. All of the three fields are mandatory.
+mariadb_host: ""
+mariadb_port: 5432
+gcs_bucket_name: ""
+gcloud_project: ""
+
+# Either workload identity or gcs_serviceaccount should be enabled
+
+# If workload identity is enabled, the serviceAccountonKubernetes is a mandatory field to which the GCP service Account
+# is attached. Recommended when using GKE.
+workloadIdentity:
+  enabled: true
+  serviceAccountonKuberenetes: ""
+
+# If gcs_serviceaccount is enabled, the service account json content needs to be passed. If existing secret is enabled, the secretName and
+# secretKey is mandatory to pass from where the serviceaccount.json will be fetched. Needed when the K8s cluster is not hosted on GKE.
+# If workload Identity is also enabled, service account private key(gcs_serviceaccount) will take precendence over workload identity
+gcs_serviceaccount:
+  enabled: false
+  existing_secret:
+    enabled: true
+    secretName: ""
+    secretKey: ""
+  privatekey: 
+              # {
+              #   "type": "service_account",
+              #   "project_id": "project-name",
+              #   "private_key_id": "",
+              #   "private_key": "",
+              #   "client_email": "sa-name@project-name.iam.gserviceaccount.com",
+              #   "client_id": "",
+              #   "auth_uri": "",
+              #   "token_uri": "",
+              #   "auth_provider_x509_cert_url": "",
+              #   "client_x509_cert_url": ""
+              # }

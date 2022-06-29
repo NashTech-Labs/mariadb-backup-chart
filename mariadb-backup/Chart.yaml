@@ -1,0 +1,9 @@
+apiVersion: v2
+name: mariadb-backup
+version: 1.0.0
+appVersion: 1.0.0
+type: application
+keywords:
+  - "mariadb"
+  - "backup"
+description: Backup the mariadb and compress it to tarball and copy it to GCS bucket
