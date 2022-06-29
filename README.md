@@ -1,4 +1,4 @@
-# mongodb Backup
+# Mariadb Backup
 ![Helm](https://helm.sh/img/helm.svg)
 
 This Helm chart runs a cronjob and creates backup at a regular interval in the form of `.tar.gz` and upload the `tar.gz` file to GCS bucket. The chart is designed in such a manner that the Kubernetes Cluster need not be hotsed on GKE. In case of GKE cluster, the chart provides options to utilize the GKE `workload identity` feature to map GKE service account to Kubernetes Service Account.
