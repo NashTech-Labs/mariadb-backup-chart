@@ -14,7 +14,7 @@ data:
     echo "Asia/Kolkata" > /etc/timezone
     backup_filename="mariadbbackup_"$(date +"%d.%m.%y-%H-%M-%S")
     echo -e "\nBacking Up ..."
-    mongodump -h ${DB_HOST} -P ${DB_PORT} -u ${DB_ADMIN_USER} -p ${DBPASSWORD} -A --opt --column-statistics=0  > ${backup_filename}
+    mysqldump -h ${DB_HOST} -P ${DB_PORT} -u ${DB_ADMIN_USER} -p ${DBPASSWORD} -A --opt --column-statistics=0  > ${backup_filename}
     if [[ $? != 0 ]]
     then
         echo "Exiting......"
